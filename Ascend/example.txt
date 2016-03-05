@@ -1,0 +1,97 @@
+bool char float func int proc str type
+
+variable declaration
+	<type> <id>
+	int x
+
+variable initialization
+	<type> <id> = <exp>
+	int x = 5
+
+variable assignment
+	<id> = <exp>
+	x = 10
+
+variable incrementation
+	<id> (++|--)
+	x++
+
+procedure declaration
+	proc <id> ( <declaration sequence> )
+	proc printMessage(str message)
+
+function declaration
+	func <return type> <id> ( <declaration sequence> )
+	func float getX()
+
+class declaration
+	class <id> ( <parent sequence> )
+	class Square(Shape)
+
+executable call
+	<id> ( <exp sequence> )
+	printMessage("hello")
+
+if statement
+	if ( <exp> )
+	if (x < 10)
+
+while loop
+	while ( <exp> )
+	while (x < 10)
+
+return statement
+	return ( <exp> )
+	return 10
+
+end statement
+	end
+
+
+int x = 5
+print(getX())
+
+proc printMessage(str message)
+	print(message)
+
+func getX()
+	return (x)
+
+class Square(Shape)
+	float side
+	float getArea()
+		return (side ^ 2)
+
+if (exp)
+	body
+else if (exp)
+	body
+else
+	body
+end
+
+while (exp)
+	body
+end
+
+Arithmetic: + - * / % ^
+Comparative: == <> < > <= >=
+Logical: & | not ?
+Miscellaneous: #
+
+? operator
+	x? // convert x to boolean
+
+# operator
+	#x // get size
+
+Operator Precedence
+.
+not ? # !
+^
+* / %
++ -
+< > <= >=
+== <>
+& |
+,
