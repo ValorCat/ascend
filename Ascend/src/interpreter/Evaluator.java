@@ -395,6 +395,10 @@ public class Evaluator {
 			}
 			leftOperand = getOperand(expr, leftMostPos, oper, "left");
 			rightOperand = getOperand(expr, rightMostPos, oper, "right");
+			if (leftOperand == null && oper.equals("-")) {
+				leftOperand = new Value("int", 0);
+				leftMostPos++;
+			}
 			result = Operation.operate(oper, leftOperand, rightOperand);
 			break;
 		default:
@@ -410,6 +414,9 @@ public class Evaluator {
 		try {
 			return ((Literal) expr.get(pos)).toValue();
 		} catch (ClassCastException | IndexOutOfBoundsException e) {
+			if (oper.equals("-") && side.equals("left")) {
+				return null;
+			}
 			throw new AscendException(ErrorCode.SYNTAX, "The '%s' operator expects a value on the %s", oper, side);
 		}
 	}
