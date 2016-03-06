@@ -1,5 +1,9 @@
 package lang;
 import cmd.*;
+import cmd.var.CompoundSetCommand;
+import cmd.var.CompoundSetVarCommand;
+import cmd.var.SetCommand;
+import cmd.var.SetVarCommand;
 import interpreter.Evaluator;
 import util.CommandBuilder;
 import util.TokenArray;

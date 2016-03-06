@@ -1,5 +1,6 @@
-package cmd;
+package cmd.var;
 
+import cmd.Command;
 import interpreter.Evaluator;
 import interpreter.Parser;
 import util.AscendException;

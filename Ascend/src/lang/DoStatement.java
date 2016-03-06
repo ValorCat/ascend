@@ -1,5 +1,7 @@
 package lang;
 import cmd.*;
+import cmd.control.OpenDoStructCommand;
+import cmd.control.OpenStructCommand;
 import util.CommandBuilder;
 import util.TokenArray;
 

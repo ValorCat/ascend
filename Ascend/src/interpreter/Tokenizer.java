@@ -165,8 +165,6 @@ public class Tokenizer {
 						newTokens.add(null);
 						newTokens.add(null);
 						continue;
-					} else {
-						throw new AscendException(ErrorCode.SYNTAX, "Expected closing ']'");
 					}
 				}
 				

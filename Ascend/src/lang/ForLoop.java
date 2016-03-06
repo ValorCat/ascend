@@ -1,6 +1,11 @@
 package lang;
 
 import cmd.*;
+import cmd.control.OpenForLoopCommand;
+import cmd.control.OpenStructCommand;
+import cmd.var.RegisterCommand;
+import cmd.var.SetCommand;
+import cmd.var.SetVarCommand;
 import interpreter.Evaluator;
 import util.AscendException;
 import util.CommandBuilder;

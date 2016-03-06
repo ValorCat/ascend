@@ -1,5 +1,6 @@
-package cmd;
+package cmd.var;
 
+import cmd.Command;
 import interpreter.Parser;
 
 public class UnregisterCommand extends Command {

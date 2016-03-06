@@ -1,6 +1,7 @@
 package interpreter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -134,6 +135,7 @@ public class Environment {
 			this.type = type;
 			this.length = length;
 			this.array = new int[length];
+			Arrays.fill(array, -1);
 		}
 		
 		public String getType() {
@@ -160,9 +162,7 @@ public class Environment {
 		
 		public void dropRefs() {
 			for (int id : array) {
-				if (memory.get(id).dropRef()) {
-					memory.set(id, null);
-				}
+				dropRef(id);
 			}
 		}
 	}
@@ -261,6 +261,12 @@ public class Environment {
 		return memory.size() - 1;
 	}
 	
+	private void dropRef(int memoryID) {
+		if (memoryID > -1 && memory.get(memoryID).dropRef()) {
+			memory.set(memoryID, null);
+		}
+	}
+	
 	public int getIDFromName(String varName) {
 		Namespace space = getNamespace(varName);
 		String localName = getLocalName(varName);
@@ -286,9 +292,7 @@ public class Environment {
 		int currentID = space.getMemoryID(varName);
 		int newID = storeInMemory(value);
 		space.mapNameToID(localName, newID);
-		if (currentID > -1 && memory.get(currentID).dropRef()) {
-			memory.set(currentID, null);
-		}
+		dropRef(currentID);
 	}
 	
 	public void unmapName(String varName) {
@@ -305,8 +309,11 @@ public class Environment {
 		int length = values.length;
 		ArrayObject newArray = new ArrayObject(type, length);
 		for (int i = 0; i < length; i++) {
-			int id = storeInMemory(values[i]);
-			newArray.setIndexToID(i, id);
+			Value value = values[i];
+			if (value != null) {
+				int id = storeInMemory(values[i]);
+				newArray.setIndexToID(i, id);
+			}
 		}
 		arrays.add(newArray);
 		return new Value(type + "[]", arrays.size() - 1);
@@ -318,7 +325,25 @@ public class Environment {
 			throw new AscendException(ErrorCode.INTERNAL, "Attempted to reference array ID %i of %i", arrayID, arrays.size());
 		}
 		int valueID = arrays.get(arrayID).getIDFromIndex(index);
+		if (valueID == -1) {
+			throw new AscendException(ErrorCode.INDEX, "Cannot reference uninitialized array index %d", index);
+		}
 		return memory.get(valueID).getValue();
+	}
+	
+	public void mapArrayIndexToValue(Value array, int index, Value value) {
+		int arrayID = (int) array.value();
+		if (arrayID < 0 || arrayID > arrays.size()) {
+			throw new AscendException(ErrorCode.INTERNAL, "Attempted to reference array ID %i of %i", arrayID, arrays.size());
+		}
+		ArrayObject obj = arrays.get(arrayID);
+		if (!value.isA(obj.getType())) {
+			throw new AscendException(ErrorCode.TYPE, "Cannot assign %s to %s array", value.type(), obj.getType());
+		}
+		int currentID = obj.getIDFromIndex(index);
+		int newID = storeInMemory(value);
+		obj.setIndexToID(index, newID);
+		dropRef(currentID);
 	}
 	
 	public int getArrayLength(Value array) {

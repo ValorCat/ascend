@@ -183,22 +183,31 @@ public class Operation {
 					throw new AscendException(ErrorCode.INDEX, "Cannot get slice %d:%d from length %d string", intIndex1, intIndex2, base.length());
 				}
 			}
-		} else if (sequence.isA("array")) {
+		} else if (sequence.isArray()) {
 			Environment env = Parser.getParser().getEnv();
+			type = env.getArrayType(sequence);
 			if (index2 == null) {
 				// get item
-				type = env.getArrayType(sequence);
 				value = env.getValueFromArrayIndex(sequence, intIndex1).value();
 			} else {
 				// get slice
 				int intIndex2 = (int) index2.value();
-				type = "array";
+				type += "[]";
 				Value[] slice = new Value[intIndex2 - intIndex1];
 				for (int i = intIndex1; i < intIndex2; i++) {
 					slice[i - intIndex1] = env.getValueFromArrayIndex(sequence, i);
 				}
 				value = env.defineArray(env.getArrayType(sequence), slice).value();
 			}
+		} else if (sequence.isA("type")) {
+			if (index2 != null) {
+				throw new AscendException(ErrorCode.SYNTAX, "Expected array length, got multiple values");
+			}
+			Environment env = Parser.getParser().getEnv();
+			String arrayType = (String) sequence.value();
+			Value newArray = env.defineArray(arrayType, new Value[intIndex1]);
+			type = newArray.type();
+			value = newArray.value();
 		}
 	}
 	
@@ -225,7 +234,7 @@ public class Operation {
 		type = "int";
 		if (operand.isA("str")) {
 			value = ((String) operand.value()).length();
-		} else if (operand.isA("array")) {
+		} else if (operand.isArray()) {
 			value = Parser.getParser().getEnv().getArrayLength(operand);
 		}
 	}

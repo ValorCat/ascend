@@ -19,6 +19,7 @@ public class Compiler {
 			new ForLoop(),
 			new IfStatement(),
 			new Increment(),
+			new IndexAssignment(),
 			new Initialization(),
 			new ProcedureCall(),
 			new WhileLoop(),

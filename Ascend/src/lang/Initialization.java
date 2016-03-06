@@ -1,6 +1,9 @@
 package lang;
 
 import cmd.*;
+import cmd.var.RegisterCommand;
+import cmd.var.SetCommand;
+import cmd.var.SetVarCommand;
 import interpreter.Evaluator;
 import util.CommandBuilder;
 import util.AscendException;

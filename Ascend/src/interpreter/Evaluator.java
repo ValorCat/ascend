@@ -421,7 +421,7 @@ public class Evaluator {
 		}
 	}
 	
-	private static int findMatchingWrapper(TokenArray expr, int startPos) {
+	public static int findMatchingWrapper(TokenArray expr, int startPos) {
 		String openWrapper = expr.get(startPos);
 		String closeWrapper;
 		switch(openWrapper) {

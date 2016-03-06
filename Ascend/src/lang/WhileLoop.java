@@ -1,6 +1,8 @@
 package lang;
 
 import cmd.*;
+import cmd.control.OpenStructCommand;
+import cmd.control.OpenWhileLoopCommand;
 import util.CommandBuilder;
 import util.TokenArray;
 

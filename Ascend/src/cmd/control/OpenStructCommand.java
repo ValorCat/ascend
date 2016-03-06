@@ -1,5 +1,6 @@
-package cmd;
+package cmd.control;
 
+import cmd.Command;
 import interpreter.Parser;
 
 public class OpenStructCommand extends Command {

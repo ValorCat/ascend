@@ -1,6 +1,7 @@
 package lang;
 
 import cmd.*;
+import cmd.var.UnregisterCommand;
 import util.CommandBuilder;
 import util.TokenArray;
 import util.TokenType;

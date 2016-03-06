@@ -1,6 +1,7 @@
 package lang;
 
 import cmd.*;
+import cmd.control.CloseStructCommand;
 import util.CommandBuilder;
 import util.TokenArray;
 

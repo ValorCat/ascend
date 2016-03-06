@@ -1,6 +1,9 @@
 package lang;
 
 import cmd.*;
+import cmd.control.OpenIfBranchCommand;
+import cmd.control.OpenIfStructCommand;
+import cmd.control.OpenStructCommand;
 import util.CommandBuilder;
 import util.TokenArray;
 
