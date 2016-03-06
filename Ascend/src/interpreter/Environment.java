@@ -13,7 +13,7 @@ public class Environment {
 	// Old Environment: pastebin.com/K7eW86pK
 	// Old Environment #2: pastebin.com/7Na0iNju
 	
-	public static final String[] PRIMITIVE_TYPES = new String[] {"array", "bool", "float", "func", "int", "obj", "proc", "str", "type"};
+	public static final String[] PRIMITIVE_TYPES = new String[] {"bool", "float", "func", "int", "obj", "proc", "str", "type"};
 	
 	private ArrayList<MemoryItem> memory;
 	private ArrayList<Namespace> env;
@@ -42,7 +42,7 @@ public class Environment {
 		public boolean dropRef() {
 			refCount--;
 			boolean canBeDeleted = refCount == 0;
-			if (canBeDeleted && value.isA("array") && value.value() != null) {
+			if (canBeDeleted && value.isArray() && value.value() != null) {
 				arrays.get((int) value.value()).dropRefs();
 			}
 			return canBeDeleted;
@@ -309,7 +309,7 @@ public class Environment {
 			newArray.setIndexToID(i, id);
 		}
 		arrays.add(newArray);
-		return new Value("array", arrays.size() - 1);
+		return new Value(type + "[]", arrays.size() - 1);
 	}
 	
 	public Value getValueFromArrayIndex(Value array, int index) {

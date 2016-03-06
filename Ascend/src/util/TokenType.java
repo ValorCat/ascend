@@ -21,7 +21,11 @@ public enum TokenType {
 		if (isIntegerLiteral(token) || isFloatLiteral(token) || isBooleanLiteral(token) || isStringLiteral(token)) {
 			return LITERAL;
 		}
-		if (token.matches("[\\p{Alpha}_][\\w\\.]*")) {
+		String cutToken = token;
+		while (cutToken.endsWith("[]")) {
+			cutToken = cutToken.substring(0, cutToken.length() - 2);
+		}
+		if (cutToken.matches("[\\p{Alpha}_][\\w\\.]*")) {
 			return IDENTIFIER;
 		}
 		return INVALID;

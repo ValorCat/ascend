@@ -15,7 +15,7 @@ public class Tokenizer {
 	private static final String PATTERN_SPLIT = "((?<=%1$s)|(?=%1$s))";
 	private static final String PATTERN_KEY = "[\\p{Punct}\n\t ]";
 	private static final String[] COMPOUND_OPS = new String[] {
-			"+=", "-=", "*=", "/=", "^=", "==", "<>", "<=", ">=", "++", "--", "[]"
+			"+=", "-=", "*=", "/=", "^=", "==", "<>", "<=", ">=", "++", "--"
 	};
 	
 	private static ArrayList<String> tokens = new ArrayList<String>();
@@ -155,6 +155,18 @@ public class Tokenizer {
 							newTokens.add(null);
 							continue outer;
 						}
+					}
+				}
+				
+				// array types
+				if (TokenType.isIdentifier(token) && nextToken.equals("[")) {
+					if (i < tokens.size() - 2 && tokens.get(i + 2).equals("]")) {
+						newTokens.add(token + "[]");
+						newTokens.add(null);
+						newTokens.add(null);
+						continue;
+					} else {
+						throw new AscendException(ErrorCode.SYNTAX, "Expected closing ']'");
 					}
 				}
 				

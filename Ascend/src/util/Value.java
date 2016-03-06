@@ -34,6 +34,10 @@ public class Value {
 		return this.type.equals(type);
 	}
 	
+	public boolean isArray() {
+		return this.type.endsWith("[]");
+	}
+	
 	public boolean isPrimitive() {
 		return interpreter.Environment.isPrimitive(type);
 	}
@@ -60,8 +64,6 @@ public class Value {
 	
 	public String toCleanString() {
 		switch (type) {
-		case "array":
-			return String.format("arr@%s", value);
 		case "func":
 			return String.format("func@%s", value);
 		case "proc":
@@ -69,6 +71,8 @@ public class Value {
 		default:
 			if (value == null) {
 				return "null";
+			} else if (isArray()) {
+				return String.format("arr@%s", value);
 			}
 			return value.toString();
 		}
