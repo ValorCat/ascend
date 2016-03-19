@@ -1,11 +1,14 @@
 package lib;
 
+import java.util.ArrayList;
+
+import interpreter.Environment;
 import interpreter.Parser;
 import util.Value;
 
 public class StringLib {
 	
-	public final static String[] FUNCTIONS = {"compare", "contains", "copy", "count", "index", "lower", "prefix", "replace", "reverse", "split", "suffix", "pad", "trim", "upper"};
+	public final static String[] FUNCTIONS = {"compare", "contains", "copy", "count", "index", "lower", "prefix", "replace", "reverse", "split", "suffix", "pad", "trim", "upper", "wrap"};
 	public final static String[] PROCEDURES = {};
 	
 	public static Value[] params;
@@ -124,4 +127,25 @@ public class StringLib {
 		returnValue = new Value("str", str.toUpperCase());
 	}
 
+	public static void wrap() {
+		StandardLib.paramCheck("wrap", params, params.length == 2, "str", "int");
+		String str = (String) params[0].value();
+		int len = (int) params[1].value();
+		Environment env = Parser.getParser().getEnv();
+		ArrayList<Value> lines = new ArrayList<Value>();
+		int charCount = 0;
+		int lastBreak = -1;
+		for (int i = 0; i < str.length(); i++) {
+			if (charCount >= len || str.charAt(i) == '\n') {
+				lines.add(new Value("str", str.substring(lastBreak + 1, i + 1)));
+				lastBreak = i;
+				charCount = 0;
+			} else {
+				charCount++;
+			}
+		}
+		lines.add(new Value("str", str.substring(lastBreak + 1)));
+		returnValue = env.defineArray("str", lines.toArray(new Value[0]));
+	}
+	
 }

@@ -31,6 +31,9 @@ public class IndexCompoundSetCommand extends Command {
 	@Override
 	public void execute(Parser parser) {
 		Value array = parser.getEnv().getValueFromName(varName);
+		if (!array.isArray()) {
+			throw new AscendException(ErrorCode.INDEX, "Cannot index type '%s'", array.type());
+		}
 		Value indexVal = Evaluator.evaluate(index);
 		if (!indexVal.isA("int")) {
 			throw new AscendException(ErrorCode.TYPE, "Index value must be of type 'int', got '%s'", indexVal.type());

@@ -220,7 +220,8 @@ public class Evaluator {
 		} else if (TokenType.isBooleanLiteral(token)) {
 			value = new Value("bool", Boolean.parseBoolean(token));
 		} else if (TokenType.isStringLiteral(token)) {
-			value = new Value("str", token.substring(1, token.length() - 1));
+			String str = token.substring(1, token.length() - 1);
+			value = new Value("str", str.replaceAll("\\\\n", "\n"));
 		} else {
 			throw new AscendException(ErrorCode.TYPE, "Token '%s' (%s) was incorrectly flagged as a literal", token, TokenType.getType(token).toString());
 		}

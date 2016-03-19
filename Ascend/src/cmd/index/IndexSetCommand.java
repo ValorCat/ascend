@@ -28,10 +28,14 @@ public class IndexSetCommand extends Command {
 	@Override
 	public void execute(Parser parser) {
 		Value array = parser.getEnv().getValueFromName(varName);
+		if (!array.isArray()) {
+			throw new AscendException(ErrorCode.INDEX, "Cannot index type '%s'", array.type());
+		}
 		Value indexVal = Evaluator.evaluate(index);
 		if (!indexVal.isA("int")) {
 			throw new AscendException(ErrorCode.TYPE, "Index value must be of type 'int', got '%s'", indexVal.type());
 		}
+		System.out.println(array);
 		parser.getEnv().mapArrayIndexToValue(array, (int) indexVal.value(), value);
 		devOutput("%s[%d] = %s", varName, (int) indexVal.value(), value);
 	}
