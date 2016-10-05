@@ -15,18 +15,15 @@ public class IndexSetVarCommand extends Command {
 	private TokenArray varValue;
 	
 	public IndexSetVarCommand(String varName, TokenArray index, TokenArray varValue) {
+		super("SEQ_SET_VAR");
 		this.varName = varName;
 		this.index = index;
 		this.varValue = varValue;
 	}
 
 	@Override
-	public String getName() {
-		return "SEQ_SET_VAR";
-	}
-
-	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
+		Parser parser = Parser.getParser();
 		Value array = parser.getEnv().getValueFromName(varName);
 		if (!array.isArray()) {
 			throw new AscendException(ErrorCode.INDEX, "Cannot index type '%s'", array.type());

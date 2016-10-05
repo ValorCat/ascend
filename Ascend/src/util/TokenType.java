@@ -4,8 +4,24 @@ public enum TokenType {
 
 	IDENTIFIER, OPERATOR, CONTROL, LITERAL, INVALID;
 	
-	public static final String[] OPERATORS = new String[] {"+", "-", "*", "/", "%", "^", "not", "==", "<>", "<", ">", "<=", ">=", "and", "or", "not", "to", "is", "?", "#", ".", "@", "(", ")", "{", "}", "[", "]"};
-	public static final String[] CONTROLS = new String[] {"=", "+=", "-=", "*=", "/=", "%=", "^=", "break", "del", "else", "end", "for", "if", "while", "return", "by"};
+	public static final String ID_REGEX = "[\\\\p{Alpha}_][\\\\w\\\\.]*";
+	public static final String TYPE_REGEX = ID_REGEX + "(?:\\\\[\\\\])*";
+	public static final String EQUALS_REGEX = "[\\\\p{Punct}]?=";
+	private static final String ID_REGEX_NORMAL = "[\\p{Alpha}_][\\w\\.]*";
+	
+	public static final String[] OPERATORS = {
+			"+", "-", "*", "/", "%", "%%", "^",
+			"==", "<>", "<", ">", "<=", ">=",
+			"not", "and", "or",
+			"to", "is",
+			".", "?", "#", "@",
+			"(", ")", "{", "}", "[", "]"
+	};
+	
+	public static final String[] CONTROLS = {
+			"=", "+=", "-=", "*=", "/=", "%=", "^=",
+			"break", "by", "del", "else", "end", "for", "if", "then", "return", "while"
+	};
 	
 	public static TokenType getType(String token) {
 		for (String control : CONTROLS) {
@@ -25,7 +41,7 @@ public enum TokenType {
 		while (cutToken.endsWith("[]")) {
 			cutToken = cutToken.substring(0, cutToken.length() - 2);
 		}
-		if (cutToken.matches("[\\p{Alpha}_][\\w\\.]*")) {
+		if (cutToken.matches(ID_REGEX_NORMAL)) {
 			return IDENTIFIER;
 		}
 		return INVALID;

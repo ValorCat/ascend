@@ -1,27 +1,38 @@
 package lang;
 
+import java.util.List;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+
 import cmd.*;
 import cmd.control.OpenStructCommand;
-import cmd.control.OpenWhileLoopCommand;
-import util.CommandBuilder;
+import cmd.control.SetupWhileLoopCommand;
+import interpreter.Tokenizer;
 import util.TokenArray;
 
 public class WhileLoop implements Statement {
 	
-	public boolean isValid(TokenArray statement) {
-		return statement.size() >= 4 &&
+	private TokenArray expr;
+
+	@Override
+	public Matcher getMatcher(TokenArray statement) {
+		/*return statement.size() >= 4 &&
 				statement.get(0).equals("while") &&
 				statement.get(1).equals("(") &&
-				statement.get(-1).equals(")");
+				statement.get(-1).equals(")");*/
+		return statement.match("while \\( (.*) \\)");
 	}
-	
-	public Command[] apply(TokenArray statement) {
-		TokenArray exp = statement.range(2, -1);
-		CommandBuilder commands = new CommandBuilder();
-		commands.add(new OpenWhileLoopCommand(exp));
+
+	@Override
+	public void parseStatement(MatchResult match) {
+		expr = Tokenizer.retokenize(match.group(1));
+	}
+
+	@Override
+	public void buildCommands(List<Command> commands) {
+		commands.add(new SetupWhileLoopCommand(expr));
 		commands.add(new OpenStructCommand());
 		commands.add(new OpenBlockCommand());
-		return commands.finish();
 	}
 
 }

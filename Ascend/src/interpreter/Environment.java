@@ -3,6 +3,8 @@ package interpreter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import util.AscendException;
@@ -14,15 +16,16 @@ public class Environment {
 	// Old Environment: pastebin.com/K7eW86pK
 	// Old Environment #2: pastebin.com/7Na0iNju
 	
-	public static final String[] PRIMITIVE_TYPES = new String[] {"bool", "float", "func", "int", "obj", "proc", "str", "type"};
+	public static final String[] PRIMITIVE_TYPES = {"bool", "float", "func", "int", "obj", "proc", "str", "type"};
 	
-	private ArrayList<MemoryItem> memory;
-	private ArrayList<Namespace> env;
-	private ArrayList<ArrayObject> arrays;
+	private List<MemoryItem> memory;
+	private List<Namespace> env;
+	private List<ArrayObject> arrays;
 	private Namespace global;
 	private int builtinIndexEnd;
 	
 	private class MemoryItem {
+		
 		private Value value;
 		private int refCount;
 		
@@ -52,15 +55,17 @@ public class Environment {
 		public String toString() {
 			return String.format("%s#%d", value.toString(), refCount);
 		}
+		
 	}
 	
 	private class Namespace {
-		private HashMap<String, Integer> vars;
-		private HashMap<String, Integer> blocks;
+		
+		private Map<String, Integer> vars;
+		private Map<String, Integer> blocks;
 		
 		public Namespace() {
-			this.vars = new HashMap<String, Integer>();
-			this.blocks = new HashMap<String, Integer>();
+			this.vars = new HashMap<>();
+			this.blocks = new HashMap<>();
 		}
 		
 		public int getMemoryID(String varName) {
@@ -124,9 +129,11 @@ public class Environment {
 				unmapName(id);
 			}
 		}
+		
 	}
 	
 	private class ArrayObject {
+		
 		private String type;
 		private int length;
 		private int[] array;
@@ -138,12 +145,22 @@ public class Environment {
 			Arrays.fill(array, -1);
 		}
 		
+		public ArrayObject(String type, int[] valueIDs) {
+			this.type = type;
+			this.length = valueIDs.length;
+			this.array = valueIDs;
+		}
+		
 		public String getType() {
 			return type;
 		}
 		
 		public int getLength() {
 			return length;
+		}
+		
+		public int[] getValueIDs() {
+			return array;
 		}
 		
 		public int getIDFromIndex(int index) {
@@ -165,13 +182,14 @@ public class Environment {
 				dropRef(id);
 			}
 		}
+		
 	}
 	
 	public Environment() {
 		// initialize fields
-		this.memory = new ArrayList<MemoryItem>();
-		this.env = new ArrayList<Namespace>();
-		this.arrays = new ArrayList<ArrayObject>();
+		this.memory = new ArrayList<>();
+		this.env = new ArrayList<>();
+		this.arrays = new ArrayList<>();
 		this.env.add(new Namespace());
 		this.global = env.get(0);
 		
@@ -230,7 +248,11 @@ public class Environment {
 	private Namespace getNamespaceInternal(String[] nameParts, int pos, Namespace currentSpace) {
 		int id = currentSpace.getMemoryID(nameParts[pos]);
 		if (id == -1) {
-			throw new AscendException(ErrorCode.REFERENCE, "The '" + nameParts[pos] + "' attribute is undefined for the type '" + nameParts[pos - 1] + "'");
+			if (pos == 0) {
+				throw new AscendException(ErrorCode.REFERENCE, "The '%s' type is undefined", nameParts[pos]);
+			} else {
+				throw new AscendException(ErrorCode.REFERENCE, "The '%s' attribute is undefined for the type '%s'", nameParts[pos], nameParts[pos - 1]);
+			}
 		}
 		Value value = memory.get(id).getValue();
 		if (!value.type().equals("obj")) {
@@ -252,7 +274,7 @@ public class Environment {
 				return i;
 			} else if (value.equals(item.getValue())) {
 				// value already stored
-				memory.get(i).addRef();
+				item.addRef();
 				return i;
 			}
 		}
@@ -281,7 +303,7 @@ public class Environment {
 	
 	public Value getValueFromID(int id) {
 		if (id >= memory.size() || id < 0) {
-			throw new AscendException(ErrorCode.REFERENCE, "The memory location '" + id + "' is unmapped");
+			throw new AscendException(ErrorCode.REFERENCE, "The memory location %d is unmapped", id);
 		}
 		return memory.get(id).getValue();
 	}
@@ -311,7 +333,7 @@ public class Environment {
 		for (int i = 0; i < length; i++) {
 			Value value = values[i];
 			if (value != null) {
-				int id = storeInMemory(values[i]);
+				int id = storeInMemory(value);
 				newArray.setIndexToID(i, id);
 			}
 		}
@@ -319,10 +341,28 @@ public class Environment {
 		return new Value(type + "[]", arrays.size() - 1);
 	}
 	
+	public Value defineArray(ArrayObject copy) {
+		String type = copy.getType();
+		int[] valueIDs = copy.getValueIDs().clone();
+		for (int id : valueIDs) {
+			memory.get(id).addRef();
+		}
+		arrays.add(new ArrayObject(type, valueIDs));
+		return new Value(type + "[]", arrays.size() - 1);
+	}
+	
+	public ArrayObject getArray(Value array) {
+		int arrayID = (int) array.value();
+		if (arrayID < 0 || arrayID > arrays.size()) {
+			throw new AscendException(ErrorCode.INTERNAL, "Attempted to reference array ID %d of %d", arrayID, arrays.size());
+		}
+		return arrays.get(arrayID);
+	}
+	
 	public Value getValueFromArrayIndex(Value array, int index) {
 		int arrayID = (int) array.value();
 		if (arrayID < 0 || arrayID > arrays.size()) {
-			throw new AscendException(ErrorCode.INTERNAL, "Attempted to reference array ID %i of %i", arrayID, arrays.size());
+			throw new AscendException(ErrorCode.INTERNAL, "Attempted to reference array ID %d of %d", arrayID, arrays.size());
 		}
 		int valueID = arrays.get(arrayID).getIDFromIndex(index);
 		if (valueID == -1) {

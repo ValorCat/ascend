@@ -1,6 +1,7 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class PrecedenceBuilder {
 	
@@ -8,40 +9,54 @@ public class PrecedenceBuilder {
 		{"?", "#", "@"},
 		{"not"},
 		{"^"},
-		{"*", "/", "%"},
+		{"*", "/", "%", "%%"},
 		{"+", "-"},
 		{"<", ">", "<=", ">="},
 		{"==", "<>", "is", "to"},
 		{"and", "or"},
 	};
 	
-	private ArrayList<Integer>[] levels;
+	private class Row {
+		
+		private List<Integer> values;
+		
+		public Row() {
+			this.values = new ArrayList<>();
+		}
+		
+		public List<Integer> getRow() {
+			return values;
+		}
+		
+	}
 	
-	@SuppressWarnings("unchecked")
+	private Row[] levels;
+	
 	public PrecedenceBuilder() {
-		levels = (ArrayList<Integer>[]) new ArrayList[PRECEDENCE.length];
+		levels = new Row[PRECEDENCE.length];
 	}
 	
 	public void addOper(int pos, String oper) {
 		int level = getLevelFromOper(oper);
 		if (level == -1) {
-			throw new AscendException(ErrorCode.SYNTAX, "The '%s' operator is undefined", oper);
+			throw new AscendException(ErrorCode.SYNTAX, "The '%s' operator has no defined precedence", oper);
 		}
 		if (levels[level] == null) {
-			levels[level] = new ArrayList<Integer>();
+			levels[level] = new Row();
 		}
-		levels[level].add(pos);
+		levels[level].getRow().add(pos);
 	}
 	
-	public Integer[] compile() {
-		ArrayList<Integer> result = new ArrayList<Integer>();
+	public List<Integer> compile() {
+		List<Integer> result = new ArrayList<>();
 		for (int i = 0; i < levels.length; i++) {
-			ArrayList<Integer> level = levels[i];
-			if (level != null && level.size() > 0) {
-				result.addAll(levels[i]);
+			if (levels[i] != null) {
+				List<Integer> level = levels[i].getRow();
+				if (level.size() > 0)
+					result.addAll(level);
 			}
 		}
-		return result.toArray(new Integer[0]);
+		return result;
 	}
 	
 	private int getLevelFromOper(String oper) {

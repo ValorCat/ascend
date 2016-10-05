@@ -2,6 +2,7 @@ package interpreter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import util.AscendException;
 import util.ErrorCode;
@@ -14,22 +15,30 @@ public class Tokenizer {
 	
 	private static final String PATTERN_SPLIT = "((?<=%1$s)|(?=%1$s))";
 	private static final String PATTERN_KEY = "[\\p{Punct}\n\t ]";
-	private static final String[] COMPOUND_OPS = new String[] {
-			"+=", "-=", "*=", "/=", "^=", "==", "<>", "<=", ">=", "++", "--"
+	private static final String[] COMPOUND_OPS = {
+			"+=", "-=", "*=", "/=", "^=", "==", "<>", "<=", ">=", "++", "--", "%%"
 	};
 	
-	private static ArrayList<String> tokens = new ArrayList<String>();
+	private static List<String> tokens = new ArrayList<>();
 	
 	public static TokenArray tokenize(String textStream) {
 		tokens.clear();
-		basicSplit(textStream);
+		basicSplit(textStream, PATTERN_KEY);
 		removeComments();
 		optimize();
 		return new TokenArray(tokens);
 	}
 	
-	private static void basicSplit(String text) {
-		String pattern = String.format(PATTERN_SPLIT, PATTERN_KEY);
+	public static TokenArray retokenize(String textStream) {
+		tokens.clear();
+		basicSplit(textStream, " ");
+		if (tokens.size() > 1)
+			handleStringsOnly();
+		return new TokenArray(tokens);
+	}
+	
+	private static void basicSplit(String text, String key) {
+		String pattern = String.format(PATTERN_SPLIT, key);
 		tokens.addAll(Arrays.asList(text.split(pattern)));
 	}
 	
@@ -54,7 +63,7 @@ public class Tokenizer {
 	}
 	
 	private static void optimize() {
-		ArrayList<String> newTokens = new ArrayList<String>();
+		List<String> newTokens = new ArrayList<>();
 		boolean inStringLiteral = false;
 		boolean skipEscapedQuote = false;
 		String currentString = "";
@@ -134,9 +143,12 @@ public class Tokenizer {
 				
 				// negative numbers
 				if (token.equals("-") && nextToken.matches("\\p{Digit}+")) {
-					tokens.set(i + 1, "-" + nextToken);
-					newTokens.add(null);
-					continue;
+					TokenType lastType = i > 0 ? TokenType.getType(tokens.get(i - 1)) : null;
+					if (i == 0 || lastType == TokenType.OPERATOR || lastType == TokenType.CONTROL) {
+						tokens.set(i + 1, "-" + nextToken);
+						newTokens.add(null);
+						continue;
+					}
 				}
 				
 				// semicolons
@@ -183,5 +195,39 @@ public class Tokenizer {
 		while (newTokens.remove(null));
 		tokens = newTokens;
 	}
+	
+
+	private static void handleStringsOnly() {
+		List<String> newTokens = new ArrayList<>();
+		boolean inStringLiteral = false;
+		boolean skipEscapedQuote = false;
+		StringBuilder currentString = new StringBuilder();
+		for (String token : tokens) {
+			if (skipEscapedQuote && token.contains("\"")) {
+				newTokens.add(token);
+				skipEscapedQuote = false;
+			} else if (token.startsWith("\"") && !inStringLiteral) {
+				if (token.endsWith("\"") && token.length() > 1) {
+					newTokens.add(token);
+				} else {
+					currentString.append(token);
+					inStringLiteral = true;
+				}
+			} else if (token.endsWith("\"") && inStringLiteral) {
+				currentString.append(token);
+				newTokens.add(currentString.toString());
+				currentString.delete(0, currentString.length());
+				inStringLiteral = false;
+			} else if (inStringLiteral) {
+				if (token.equals("\\"))
+					skipEscapedQuote = true;
+				currentString.append(token);
+			} else if (!token.equals(" ")) {
+				newTokens.add(token);
+			}
+		}
+		tokens = newTokens;
+	}
+
 	
 }

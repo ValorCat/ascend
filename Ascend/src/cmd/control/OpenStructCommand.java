@@ -1,17 +1,15 @@
 package cmd.control;
 
 import cmd.Command;
-import interpreter.Parser;
 
 public class OpenStructCommand extends Command {
 
-	@Override
-	public String getName() {
-		return "OPEN_STRUCT";
+	public OpenStructCommand() {
+		super("OPEN_STRUCT");
 	}
-
+	
 	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
 		// used by parser
 	}
 

@@ -10,7 +10,7 @@ import util.Value;
 
 public class RandomLib {
 	
-	public final static String[] FUNCTIONS = {"choose", "getBool", "getFloat", "getInt", "rand"};
+	public final static String[] FUNCTIONS = {"choose", "getBool", "getFloat", "getInt", "getStr", "rand"};
 	public final static String[] PROCEDURES = {"seed"};
 	
 	public static Value[] params;
@@ -46,6 +46,19 @@ public class RandomLib {
 		int min = (int) params[0].value();
 		int max = (int) params[1].value();
 		returnValue = new Value("int", min + randgen.nextInt(max - min + 1));
+	}
+	
+	public static void getStr() {
+		StandardLib.paramCheck("getStr", params, params.length == 2, "str", "int");
+		String options = (String) params[1].value();
+		int optionsLength = options.length();
+		int length = (int) params[1].value();
+		StringBuilder string = new StringBuilder();
+		for (int i = 0; i < length; i++) {
+			int rand = randgen.nextInt(optionsLength);
+			string.append(options.charAt(rand));
+		}
+		returnValue = new Value("str", string.toString());
 	}
 	
 	public static void rand() {

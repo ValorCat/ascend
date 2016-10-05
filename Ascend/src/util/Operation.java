@@ -23,6 +23,7 @@ public class Operation {
 		case "*":   multiply(left, right); break;
 		case "/":   divide(left, right); break;
 		case "%":   mod(left, right); break;
+		case "%%":  modZero(left, right); break;
 		case "^":   raise(left, right); break;
 		case "==":  equal(left, right); break;
 		case "<>":  inequal(left, right); break;
@@ -249,6 +250,19 @@ public class Operation {
 	
 	public static void mod(Value left, Value right) {
 		binaryOp(left, right, (a, b) -> a % b);
+	}
+	
+	public static void modZero(Value left, Value right) {
+		type = "bool";
+		if (left.isA("int") && right.isA("int")) {
+			value = ((int) left.value() % (int) right.value()) == 0;
+		} else if (left.isA("int") && right.isA("float")) {
+			value = ((int) left.value() % (float) right.value()) == 0;
+		} else if (left.isA("float") && right.isA("int")) {
+			value = ((float) left.value() % (int) right.value()) == 0;
+		} else if (left.isA("float") && right.isA("float")) {
+			value = ((float) left.value() % (float) right.value()) == 0;
+		}
 	}
 	
 	public static void multiply(Value left, Value right) {

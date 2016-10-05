@@ -1,6 +1,8 @@
 package interpreter;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
 
 import cmd.Command;
 import lang.*;
@@ -10,32 +12,36 @@ import util.TokenArray;
 
 public class Compiler {
 	
-	private static final Statement[] statementTypes = new Statement[] {
-			new Assignment(),
+	private static final Statement[] STATEMENT_CLASSES = {
 			new BlockEnd(),
-			new Declaration(),
-			new Deletion(),
 			new DoStatement(),
+			new DeleteVariable(),
+			
 			new ForLoop(),
-			new IfStatement(),
-			new Increment(),
-			new IndexAssignment(),
-			new Initialization(),
-			new ProcedureCall(),
+			new IfThenBranch(),
+			new IfBranch(),
 			new WhileLoop(),
+			
+			new AssignIndex(),
+			new AssignVariable(),
+			new InitializeVariable(),
+			new DeclareVariable(),
+			new IncrementVariable(),
+			
+			new CallProcedure(),
 	};
 	
 	public static class CommandData {
 		
-		private Command[] commands;
+		private List<Command> commands;
 		private int[] levels;
 		
-		public CommandData(Command[] commands, int[] levels) {
+		public CommandData(List<Command> commands, int[] levels) {
 			this.commands = commands;
 			this.levels = levels;
 		}
 		
-		public Command[] getCommands() {
+		public List<Command> getCommands() {
 			return commands;
 		}
 		
@@ -45,9 +51,8 @@ public class Compiler {
 		
 	}
 	
-	public CommandData compile(TokenArray tokenStream) {
-		TokenArray[] statements = getStatements(tokenStream);
-		
+	public static CommandData compile(TokenArray tokenStream) {
+		List<TokenArray> statements = getStatements(tokenStream);
 		if (Ascend.debugMode) {
 			System.out.print("Statements: ");
 			for (TokenArray statement : statements) {
@@ -56,7 +61,7 @@ public class Compiler {
 			System.out.println();
 		}
 		
-		Command[] commands = getCommands(statements);
+		List<Command> commands = getCommands(statements);
 		if (Ascend.debugMode) {
 			System.out.print("Commands: ");
 			for (Command command : commands) {
@@ -64,6 +69,7 @@ public class Compiler {
 			}
 			System.out.println();
 		}
+		
 		int[] levels = getBlockLevels(commands);
 		/*if (Ascend.debugMode) {
 			System.out.print("Levels:");
@@ -72,14 +78,14 @@ public class Compiler {
 			}
 			System.out.println();
 		}*/
+		
 		return new CommandData(commands, levels);
 	}
 	
-	private TokenArray[] getStatements(TokenArray tokenStream) {
-		ArrayList<TokenArray> statements = new ArrayList<TokenArray>();
-		ArrayList<String> currentStatement = new ArrayList<String>();
-		while (tokenStream.hasNext()) {
-			String token = tokenStream.next();
+	public static List<TokenArray> getStatements(TokenArray tokenStream) {
+		List<TokenArray> statements = new ArrayList<>();
+		List<String> currentStatement = new ArrayList<>();
+		for (String token : tokenStream) {
 			if (!token.equals("\n") && !token.equals(";")) {
 				currentStatement.add(token);
 			} else if (!currentStatement.isEmpty()) {
@@ -90,42 +96,50 @@ public class Compiler {
 		if (!currentStatement.isEmpty()) {
 			statements.add(new TokenArray(currentStatement));
 		}
-		return statements.toArray(new TokenArray[0]);
+		return statements;
 	}
 	
-	private Command[] getCommands(TokenArray[] statements) {
-		ArrayList<Command> commands = new ArrayList<Command>();
+	public static List<Command> getCommands(List<TokenArray> statements) {
+		List<Command> commands = new ArrayList<>();
 		for (TokenArray statement : statements) {
-			Statement statementType = getStatementType(statement);
-			if (statementType == null) {
-				throw new AscendException(ErrorCode.SYNTAX, "Invalid statement construction");
-			}
-			for (Command command : statementType.apply(statement)) {
+			for (Command command : getCommands(statement)) {
 				commands.add(command);
 			}
 		}
-		return commands.toArray(new Command[0]);
+		return commands;
 	}
 	
-	private static Statement getStatementType(TokenArray statement) {
-		for (Statement type : statementTypes) {
-			if (type.isValid(statement)) {
-				return type;
+	public static List<Command> getCommands(TokenArray statement) {
+		Statement statementType = getStatementClass(statement);
+		List<Command> commands = new ArrayList<Command>();
+		statementType.buildCommands(commands);
+		return commands;
+	}
+	
+	private static Statement getStatementClass(TokenArray statement) {
+		if (statement.size() > 0) {
+			for (Statement type : STATEMENT_CLASSES) {
+				Matcher matcher = type.getMatcher(statement);
+				if (matcher != null && matcher.matches()) {
+					type.parseStatement(matcher.toMatchResult());;
+					return type;
+				}
 			}
 		}
-		return null;
+		throw new AscendException(ErrorCode.SYNTAX, "Invalid statement construction: %s", statement.toCleanString());
 	}
 	
-	private int[] getBlockLevels(Command[] commands) {
-		int[] levels = new int[commands.length];
+	private static int[] getBlockLevels(List<Command> commands) {
+		int length = commands.size();
+		int[] levels = new int[length];
 		boolean bumpNextLeft = false;
-		for (int i = 0; i < commands.length; i++) {
+		for (int i = 0; i < length; i++) {
 			int lastLevel = i > 0 ? levels[i - 1] : 0;
 			if (bumpNextLeft) {
 				lastLevel--;
 				bumpNextLeft = false;
 			}
-			switch (commands[i].getName()) {
+			switch (commands.get(i).getName()) {
 			case "OPEN_BLOCK":
 				levels[i] = lastLevel + 1;
 				break;

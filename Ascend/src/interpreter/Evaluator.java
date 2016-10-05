@@ -2,6 +2,7 @@ package interpreter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import util.AscendException;
 import util.ErrorCode;
@@ -20,85 +21,135 @@ public class Evaluator {
 	private static final String[] LEFT_ASSOC = {"?"};
 	
 	private static interface Token {
+		
 		String getType();
+		
 	}
 	
 	private static class Expression implements Token {
-		private Token[] expr;
-		public Expression(ArrayList<Token> expr) {this.expr = expr.toArray(new Token[0]);}
-		public String getType() {return "expression";}
-		public Token get(int pos) {return expr[pos];}
-		public void set(int pos, Token token) {expr[pos] = token;}
-		public int size() {return expr.length;}
-		public String toString() {return Arrays.deepToString(expr);}
+		
+		private List<Token> expr;
+		
+		public Expression(List<Token> expr) { this.expr = expr; }
+		
+		public String getType() { return "expression"; }
+		
+		public Token get(int pos) { return expr.get(pos); }
+		
+		public void set(int pos, Token token) { expr.set(pos,  token); }
+		
+		public int size() { return expr.size(); }
+		
+		public String toString() { return expr.toString(); }
+		
 		public void clean() {
-			ArrayList<Token> temp = new ArrayList<Token>();
+			List<Token> temp = new ArrayList<>();
 			for (Token token : expr) {
 				if (token != null) {
 					temp.add(token);
 				}
 			}
-			expr = temp.toArray(new Token[0]);
+			expr = temp;
 		}
+		
 	}
 	
 	private static class Literal implements Token {
+		
 		private Value value;
-		public Literal(Value value) {this.value = value;}
-		public String getType() {return "literal";}
-		public Value toValue() {return value;}
-		public String toString() {return value.toCleanString();}
+		
+		public Literal(Value value) { this.value = value; }
+		
+		public String getType() { return "literal"; }
+		
+		public Value toValue() { return value; }
+		
+		public String toString() { return value.toCleanString(); }
+		
 	}
 	
 	private static class Variable implements Token {
+		
 		private String name;
-		public Variable(String name) {this.name = name;}
-		public String getType() {return "variable";}
-		public String getName() {return name;}
-		public String toString() {return name;}
+		
+		public Variable(String name) { this.name = name; }
+		
+		public String getType() { return "variable"; }
+		
+		public String getName() { return name; }
+		
+		public String toString() { return name; }
+		
 	}
 	
 	private static class Function implements Token {
+		
 		private String name;
 		private TokenArray args;
-		public Function(String name) {this.name = name;}
-		public Function(String name, TokenArray args) {this.name = name; this.args = args;}
-		public String getType() {return "function";}
-		public String getName() {return name;}
-		public TokenArray getArgs() {return args;}
-		public String toString() {return String.format("%s(%s)", name, args != null ? args.toCleanString() : "");}
+		
+		public Function(String name) { this.name = name; }
+		
+		public Function(String name, TokenArray args) { this.name = name; this.args = args; }
+		
+		public String getType() { return "function"; }
+		
+		public String getName() { return name; }
+		
+		public TokenArray getArgs() { return args; }
+		
+		public String toString() {
+			return String.format("%s(%s)", name, args != null ? args.toCleanString() : "");
+		}
+		
 	}
 	
 	private static class Index implements Token {
+		
 		private String sequence;
 		private Expression startIndex;
 		private Expression endIndex;
+		
 		public Index(String sequence, Expression startIndex, Expression endIndex) {
 			this.sequence = sequence;
 			this.startIndex = startIndex;
 			this.endIndex = endIndex;
 		}
-		public String getType() {return "index";}
-		public String getName() {return sequence;}
-		public Expression getStartIndex() {return startIndex;}
-		public Expression getEndIndex() {return endIndex;}
+		
+		public String getType() { return "index"; }
+		
+		public String getName() { return sequence; }
+		
+		public Expression getStartIndex() { return startIndex; }
+		
+		public Expression getEndIndex() { return endIndex; }
+		
 		public String toString() {
 			String end = endIndex != null ? endIndex.toString() : "end";
 			return String.format("%s[%s,%s]", sequence, startIndex.toString(), end);
 		}
+		
 	}
 	
 	private static class Operator implements Token {
+		
 		private String oper;
-		public Operator(String oper) {this.oper = oper;}
-		public String getType() {return "operator";}
-		public String getOper() {return oper;}
-		public boolean equals(String other) {return oper.equals(other);}
-		public String toString() {return oper;}
+		
+		public Operator(String oper) { this.oper = oper; }
+		
+		public String getType() { return "operator"; }
+		
+		public String getOper() { return oper; }
+		
+		public boolean equals(String other) { return oper.equals(other); }
+		
+		public String toString() { return oper; }
+		
 	}
 	
 	private enum OperatorType {
+		
 		BINARY, UNARY_LEFT, UNARY_RIGHT;
+		
 		public static OperatorType getType(String oper) {
 			boolean unary = false;
 			for (String unaryOper : UNARY_OPS) {
@@ -117,6 +168,7 @@ public class Evaluator {
 			}
 			return UNARY_RIGHT;
 		}
+		
 	}
 	
 	public static Value evaluate(TokenArray tokens) {
@@ -137,8 +189,8 @@ public class Evaluator {
 	}
 	
 	public static Value getConstValue(TokenArray expr) {
-		while (expr.hasNext()) {
-			if (TokenType.isIdentifier(expr.next())) {
+		for (String token : expr) {
+			if (TokenType.isIdentifier(token)) {
 				return null;
 			}
 		}
@@ -146,7 +198,7 @@ public class Evaluator {
 	}
 	
 	private static Expression toExprFormat(TokenArray tokens) {
-		ArrayList<Token> expr = new ArrayList<Token>();
+		List<Token> expr = new ArrayList<>();
 		int end = tokens.size();
 		for (int i = 0; i < end; i++) {
 			String token = tokens.get(i);
@@ -278,16 +330,16 @@ public class Evaluator {
 		} else if (!value.isA("func")) {
 			throw new AscendException(ErrorCode.TYPE, "Cannot call '%s', a non-executable", varName);
 		}
-		Value[] args;
+		List<Value> args;
 		if (func.getArgs() != null) {
 			TokenArray[] argExpr = divideExprList(func.getArgs(), ",");
-			args = evalExprList(argExpr);
+			args = evalExprList(Arrays.asList(argExpr));
 		} else {
-			args = new Value[0];
+			args = new ArrayList<>();
 		}
 		if (value.value() instanceof String) {
 			// native
-			return Parser.callExecutable(varName, value, args);
+			return Parser.callExecutable(varName, value, args.toArray(new Value[0]));
 		} else {
 			// user-defined
 			return null;
@@ -298,8 +350,7 @@ public class Evaluator {
 		ArrayList<TokenArray> list = new ArrayList<TokenArray>();
 		ArrayList<String> tokens = new ArrayList<String>();
 		int subExprCount = 0;
-		while (expr.hasNext()) {
-			String token = expr.next();
+		for (String token : expr) {
 			if (token.equals(breakToken) && subExprCount == 0) {
 				list.add(new TokenArray(tokens));
 				tokens.clear();
@@ -316,10 +367,10 @@ public class Evaluator {
 		return list.toArray(new TokenArray[0]);
 	}
 	
-	private static Value[] evalExprList(TokenArray[] list) {
-		Value[] argValues = new Value[list.length];
-		for (int j = 0; j < list.length; j++) {
-			argValues[j] = evaluate(list[j]);
+	private static List<Value> evalExprList(List<TokenArray> list) {
+		List<Value> argValues = new ArrayList<>(list.size());
+		for (TokenArray arg : list) {
+			argValues.add(evaluate(arg));
 		}
 		return argValues;
 	}
@@ -335,7 +386,7 @@ public class Evaluator {
 	}
 	
 	private static Value simplify(Expression expr) {
-		Integer[] operPositions = getOperPrecedence(expr);
+		List<Integer> operPositions = getOperPrecedence(expr);
 		if (expr.size() > 1) {
 			for (int pos : operPositions) {
 				Token token = expr.get(pos);
@@ -356,7 +407,7 @@ public class Evaluator {
 		return ((Literal) lastToken).toValue();
 	}
 
-	private static Integer[] getOperPrecedence(Expression expr) {
+	private static List<Integer> getOperPrecedence(Expression expr) {
 		PrecedenceBuilder order = new PrecedenceBuilder();
 		for (int i = 0; i < expr.size(); i++) {
 			Token token = expr.get(i);
@@ -396,10 +447,6 @@ public class Evaluator {
 			}
 			leftOperand = getOperand(expr, leftMostPos, oper, "left");
 			rightOperand = getOperand(expr, rightMostPos, oper, "right");
-			if (leftOperand == null && oper.equals("-")) {
-				leftOperand = new Value("int", 0);
-				leftMostPos++;
-			}
 			result = Operation.operate(oper, leftOperand, rightOperand);
 			break;
 		default:
@@ -415,9 +462,6 @@ public class Evaluator {
 		try {
 			return ((Literal) expr.get(pos)).toValue();
 		} catch (ClassCastException | IndexOutOfBoundsException e) {
-			if (oper.equals("-") && side.equals("left")) {
-				return null;
-			}
 			throw new AscendException(ErrorCode.SYNTAX, "The '%s' operator expects a value on the %s", oper, side);
 		}
 	}

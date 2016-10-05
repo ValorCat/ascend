@@ -14,18 +14,15 @@ public class CompoundSetCommand extends Command {
 	private String operator;
 	
 	public CompoundSetCommand(String varName, Value modValue, String operator) {
+		super("SET_COMP_CONST");
 		this.varName = varName;
 		this.modValue = modValue;
 		this.operator = operator;
 	}
 
 	@Override
-	public String getName() {
-		return "SET_COMP_CONST";
-	}
-
-	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
+		Parser parser = Parser.getParser();
 		Value initValue = parser.getEnv().getValueFromName(varName);
 		devOutput("%s %s %s %s", varName, initValue, operator, modValue);
 		if (!initValue.hasValue()) {

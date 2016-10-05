@@ -10,18 +10,14 @@ public class SetCommand extends Command {
 	private Value varValue;
 	
 	public SetCommand(String varName, Value varValue) {
+		super("SET_CONST");
 		this.varName = varName;
 		this.varValue = varValue;
 	}
 
 	@Override
-	public String getName() {
-		return "SET_CONST";
-	}
-
-	@Override
-	public void execute(Parser parser) {
-		parser.getEnv().mapNameToValue(varName, varValue);
+	public void onExecute() {
+		Parser.getParser().getEnv().mapNameToValue(varName, varValue);
 		devOutput("%s = %s", varName, varValue);
 	}
 

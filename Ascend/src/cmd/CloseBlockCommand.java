@@ -4,13 +4,13 @@ import interpreter.Parser;
 
 public class CloseBlockCommand extends Command {
 	
-	@Override
-	public String getName() {
-		return "CLOSE_BLOCK";
+	public CloseBlockCommand() {
+		super("CLOSE_BLOCK");
 	}
 
 	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
+		Parser parser = Parser.getParser();
 		parser.getEnv().unmapBlockLevel(parser.getBlockLevel());
 	}
 

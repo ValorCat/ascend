@@ -17,6 +17,7 @@ public class IndexCompoundSetCommand extends Command {
 	private String operator;
 
 	public IndexCompoundSetCommand(String varName, TokenArray index, Value modValue, String operator) {
+		super("SEQ_SET_COMP_CONST");
 		this.varName = varName;
 		this.index = index;
 		this.modValue = modValue;
@@ -24,12 +25,8 @@ public class IndexCompoundSetCommand extends Command {
 	}
 	
 	@Override
-	public String getName() {
-		return "SEQ_SET_COMP_CONST";
-	}
-
-	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
+		Parser parser = Parser.getParser();
 		Value array = parser.getEnv().getValueFromName(varName);
 		if (!array.isArray()) {
 			throw new AscendException(ErrorCode.INDEX, "Cannot index type '%s'", array.type());

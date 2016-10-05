@@ -1,148 +1,138 @@
 package util;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class TokenArray implements Iterator<String> {
-
-	private String[] tokens;
-	private int index;
+public class TokenArray implements Iterable<String> {
+	
+	private List<String> tokens;
+	private int size;
 	
 	public TokenArray(String... tokenStream) {
-		tokens = tokenStream;
-		index = 0;
+		this.tokens = Arrays.asList(tokenStream);
+		this.size = tokens.size();
 	}
 	
 	public TokenArray(List<String> tokenStream) {
-		tokens = tokenStream.toArray(new String[0]);
-		index = 0;
+		int newSize = tokenStream.size();
+		this.tokens = new ArrayList<>(newSize);
+		this.size = newSize;
+		for (String token : tokenStream) {
+			tokens.add(token);
+		}
 	}
 	
 	public TokenArray(TokenArray other) {
-		tokens = other.toArray();
-		index = 0;
+		this.tokens = other.asList();
+		this.size = tokens.size();
+	}
+
+	public void add(int pos, String... newTokens) {
+		tokens.addAll(pos, Arrays.asList(newTokens));
+		size += newTokens.length;
+	}
+
+	public void append(String... newTokens) {
+		add(tokens.size(), newTokens);
+	}
+
+	public String[] asArray() {
+		return tokens.toArray(new String[0]);
+	}
+	
+	public List<String> asList() {
+		return tokens;
+	}
+	
+	public String asString() {
+		StringBuilder concat = new StringBuilder();
+		for (String token : tokens) {
+			concat.append(" ").append(token);
+		}
+		if (concat.length() > 0) {
+			concat.deleteCharAt(0);
+		}
+		return concat.toString();
+	}
+	
+	public boolean contains(String token) {
+		return tokens.contains(token);
+	}
+	
+	public boolean endsWith(String token) {
+		if (size < 1) {
+			return false;
+		}
+		return tokens.get(tokens.size() - 1).equals(token);
 	}
 	
 	public String get(int pos) {
 		if (pos < 0) {
-			pos = tokens.length + pos;
+			pos = tokens.size() + pos;
 		}
-		return tokens[pos];
+		return tokens.get(pos);
 	}
 	
 	public int get(String token) {
-		for (int i = 0; i < tokens.length; i++) {
-			if (token.equals(tokens[i])) {
-				return i;
-			}
-		}
-		return -1;
+		return tokens.indexOf(token);
+	}
+
+	public Matcher match(String regex) {
+		regex = regex
+				.replaceAll("\\{Ident\\}", TokenType.ID_REGEX)
+				.replaceAll("\\{Type\\}", TokenType.TYPE_REGEX)
+				.replaceAll("\\{Equals\\}", TokenType.EQUALS_REGEX);
+		String concat = asString();
+		Matcher matcher = Pattern.compile(regex).matcher(concat.subSequence(0, concat.length()));
+		matcher.matches();
+		return matcher;
 	}
 	
-	public void set(int pos, String token) {
-		tokens[pos] = token;
+	public void prepend(String... newTokens) {
+		add(0, newTokens);
 	}
 	
 	public TokenArray range(int start) {
-		return range(start, tokens.length);
+		return range(start, tokens.size());
 	}
 	
 	public TokenArray range(int start, int end) {
 		if (end < 0) {
-			end = tokens.length + end;
+			end = tokens.size() + end;
 		}
-		return new TokenArray(Arrays.copyOfRange(tokens, start, end));
+		return new TokenArray(Arrays.copyOfRange(tokens.toArray(new String[0]), start, end));
 	}
 	
-	public void add(int pos, String... newTokens) {
-		int priorLength = tokens.length;
-		int addedLength = newTokens.length;
-		int finalLength = priorLength + addedLength;
-		int offset = pos + addedLength;
-		String[] firstPart = Arrays.copyOfRange(tokens, 0, pos);
-		String[] lastPart = Arrays.copyOfRange(tokens, pos, priorLength);
-		tokens = new String[finalLength];
-		for (int i = 0; i < firstPart.length; i++) {
-			tokens[i] = firstPart[i];
-		}
-		for (int i = 0; i < addedLength; i++) {
-			tokens[pos + i] = newTokens[i];
-		}
-		for (int i = 0; i < lastPart.length; i++) {
-			tokens[offset + i] = lastPart[i];
-		}
-	}
-	
-	public void prepend(String... newTokens) {
-		int priorLength = tokens.length;
-		int addedLength = newTokens.length;
-		int finalLength = priorLength + addedLength;
-		String[] original = Arrays.copyOf(tokens, priorLength);
-		tokens = new String[finalLength];
-		for (int i = 0; i < addedLength; i++) {
-			tokens[i] = newTokens[i];
-		}
-		for (int i = 0; i < original.length; i++) {
-			tokens[addedLength + i] = original[i];
-		}
-	}
-	
-	public void append(String... newTokens) {
-		int priorLength = tokens.length;
-		int addedLength = newTokens.length;
-		int finalLength = priorLength + addedLength;
-		String[] original = Arrays.copyOf(tokens, priorLength);
-		tokens = new String[finalLength];
-		for (int i = 0; i < original.length; i++) {
-			tokens[i] = original[i];
-		}
-		for (int i = 0; i < addedLength; i++) {
-			tokens[priorLength + i] = newTokens[i];
-		}
-	}
-	
-	@Override
-	public boolean hasNext() {
-		boolean next = index < tokens.length;
-		if (next) {
-			return true;
-		} else {
-			index = 0;
-			return false;
-		}
+	public void set(int pos, String token) {
+		tokens.set(pos, token);
 	}
 
-	@Override
-	public String next() {
-		return tokens[index++];
-	}
-	
 	public int size() {
-		return tokens.length;
+		return size;
 	}
 	
-	public List<String> toList() {
-		return Arrays.asList(tokens);
+	public boolean startsWith(String token) {
+		if (size < 0) {
+			return false;
+		}
+		return tokens.get(0).equals(token);
 	}
-	
-	public String[] toArray() {
-		return tokens.clone();
-	}
-	
+
 	public String toString() {
 		return "[" + toCleanString() + "]";
 	}
 	
 	public String toCleanString() {
-		String repr = "";
-		for (String token : tokens) {
-			repr += " " + token;
-		}
-		if (repr.length() > 0) {
-			repr = repr.substring(1);
-		}
-		return repr.replaceAll("\n", "\\\\n");
+		return asString().replaceAll("\n", "\\\\n");
+	}
+
+	@Override
+	public Iterator<String> iterator() {
+		return tokens.iterator();
 	}
 	
 }

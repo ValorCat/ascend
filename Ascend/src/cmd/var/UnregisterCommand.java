@@ -8,17 +8,13 @@ public class UnregisterCommand extends Command {
 	String varName;
 	
 	public UnregisterCommand(String varName) {
+		super("UNREGISTER");
 		this.varName = varName;
 	}
 	
 	@Override
-	public String getName() {
-		return "UNREGISTER";
-	}
-
-	@Override
-	public void execute(Parser parser) {
-		parser.getEnv().unmapName(varName);
+	public void onExecute() {
+		Parser.getParser().getEnv().unmapName(varName);
 		devOutput(varName);
 	}
 

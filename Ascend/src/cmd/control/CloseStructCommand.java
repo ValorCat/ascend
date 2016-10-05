@@ -1,19 +1,19 @@
 package cmd.control;
 
 import cmd.Command;
+import control.FlowControl;
+import control.ForControl;
 import interpreter.Parser;
-import interpreter.Parser.FlowControl;
-import interpreter.Parser.ForControl;
 
 public class CloseStructCommand extends Command {
 
-	@Override
-	public String getName() {
-		return "CLOSE_STRUCT";
+	public CloseStructCommand() {
+		super("CLOSE_STRUCT");
 	}
-
+	
 	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
+		Parser parser = Parser.getParser();
 		FlowControl control = parser.getTopControl();
 		boolean active = control.atEnd();
 		if (!active) {

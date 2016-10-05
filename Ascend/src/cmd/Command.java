@@ -1,13 +1,20 @@
 package cmd;
 
 import interpreter.Ascend;
-import interpreter.Parser;
 
 public abstract class Command {
 	
-	public abstract String getName();
+	protected String name;
+
+	public Command(String name) {
+		this.name = name;
+	}
 	
-	public abstract void execute(Parser parser);
+	public abstract void onExecute();
+	
+	public String getName() {
+		return name;
+	}
 	
 	protected void devOutput(Object output) {
 		if (Ascend.debugMode) {

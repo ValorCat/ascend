@@ -1,16 +1,13 @@
 package cmd;
 
-import interpreter.Parser;
-
 public class OpenBlockCommand extends Command {
 
-	@Override
-	public String getName() {
-		return "OPEN_BLOCK";
+	public OpenBlockCommand() {
+		super("OPEN_BLOCK");
 	}
-
+	
 	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
 		// used by parser to open a block
 	}
 

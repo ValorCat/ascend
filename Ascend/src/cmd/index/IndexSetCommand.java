@@ -15,18 +15,15 @@ public class IndexSetCommand extends Command {
 	private Value value;
 
 	public IndexSetCommand(String varName, TokenArray index, Value value) {
+		super("SEQ_SET_CONST");
 		this.varName = varName;
 		this.index = index;
 		this.value = value;
 	}
 
 	@Override
-	public String getName() {
-		return "SEQ_SET_CONST";
-	}
-
-	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
+		Parser parser = Parser.getParser();
 		Value array = parser.getEnv().getValueFromName(varName);
 		if (!array.isArray()) {
 			throw new AscendException(ErrorCode.INDEX, "Cannot index type '%s'", array.type());
@@ -35,7 +32,6 @@ public class IndexSetCommand extends Command {
 		if (!indexVal.isA("int")) {
 			throw new AscendException(ErrorCode.TYPE, "Index value must be of type 'int', got '%s'", indexVal.type());
 		}
-		System.out.println(array);
 		parser.getEnv().mapArrayIndexToValue(array, (int) indexVal.value(), value);
 		devOutput("%s[%d] = %s", varName, (int) indexVal.value(), value);
 	}

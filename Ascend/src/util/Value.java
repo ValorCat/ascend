@@ -68,6 +68,8 @@ public class Value {
 			return String.format("func@%s", value);
 		case "proc":
 			return String.format("proc@%s", value);
+		case "obj":
+			return String.format("@%s", value);
 		default:
 			if (value == null) {
 				return "null";

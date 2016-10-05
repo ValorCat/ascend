@@ -12,21 +12,17 @@ public class SetVarCommand extends Command {
 	private TokenArray varValue;
 	
 	public SetVarCommand(String varName, TokenArray varValue) {
+		super("SET_VAR");
 		this.varName = varName;
 		this.varValue = varValue;
 	}
 	
 	@Override
-	public String getName() {
-		return "SET_VAR";
-	}
-
-	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
 		devOutput("%s = %s", varName, varValue);
 		Value result = Evaluator.evaluate(varValue);
 		devOutput(" -> %s", result);
-		parser.getEnv().mapNameToValue(varName, result);
+		Parser.getParser().getEnv().mapNameToValue(varName, result);
 	}
 
 }

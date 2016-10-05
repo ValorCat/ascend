@@ -16,19 +16,15 @@ public class InvokeCommand extends Command {
 	private TokenArray[] arguments;
 	
 	public InvokeCommand(String varName, TokenArray[] arguments) {
+		super("INVOKE");
 		this.varName = varName;
 		this.arguments = arguments;
 	}
 
 	@Override
-	public String getName() {
-		return "INVOKE";
-	}
-
-	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
 		devOutput("%s %s -> [", varName, Arrays.toString(arguments));
-		Value varValue = parser.getEnv().getValueFromName(varName);
+		Value varValue = Parser.getParser().getEnv().getValueFromName(varName);
 		if (varValue.isA("proc")) {
 			ArrayList<Value> argValues = new ArrayList<Value>();
 			if (arguments != null) {

@@ -5,6 +5,7 @@ import java.util.IllegalFormatException;
 import java.util.Scanner;
 
 import interpreter.Ascend;
+import interpreter.Environment;
 import interpreter.Evaluator;
 import interpreter.Parser;
 import interpreter.Tokenizer;
@@ -14,8 +15,8 @@ import util.Value;
 
 public class StandardLib {
 	
-	public final static String[] FUNCTIONS = {"all", "any", "callable", "env", "eval", "format", "id", "input", "max", "min", "sum", "typeof"};
-	public final static String[] PROCEDURES = {"assert", "bind", "exec", "exit", "print", "printf", "sleep", "write"};
+	public final static String[] FUNCTIONS = {"all", "any", "callable", "clone", "env", "eval", "format", "id", "input", "max", "min", "sum", "typeof"};
+	public final static String[] PROCEDURES = {"assert", "bind", "exec", "exit", "print", "printf", "println", "sleep"};
 	
 	public static Value[] params;
 	public static Value returnValue;
@@ -110,6 +111,15 @@ public class StandardLib {
 			returnValue = new Value("bool", true);
 		} else {
 			returnValue = new Value("bool", false);
+		}
+	}
+	
+	public static void _clone() {
+		paramCheck("clone", params, params.length == 1, "object");
+		Value arg = params[0];
+		Environment env = interpreter.Parser.getParser().getEnv();
+		if (arg.isArray()) {
+			returnValue = env.defineArray(env.getArray(arg));
 		}
 	}
 	
@@ -223,9 +233,9 @@ public class StandardLib {
 	}
 	
 	public static void print() {
-		paramCheck("print", params, params.length <= 1, "object");
-		String arg = params.length == 0 ? "" : params[0].toCleanString();
-		System.out.print(outPrefix + arg + (interpreter.Ascend.debugMode ? "" : "\n"));
+		paramCheck("print", params, params.length == 1, "object");
+		String arg = params[0].toCleanString();
+		System.out.print(outPrefix + arg + (interpreter.Ascend.debugMode ? "\n" : ""));
 	}
 	
 	public static void printf() {
@@ -237,10 +247,16 @@ public class StandardLib {
 			args[i] = (Object) range[i].value();
 		}
 		try {
-			System.out.print(outPrefix + String.format(formatString, args) + (interpreter.Ascend.debugMode ? "" : "\n"));
+			System.out.print(outPrefix + String.format(formatString, args) + (interpreter.Ascend.debugMode ? "\n" : ""));
 		} catch (IllegalFormatException e) {
 			throw new AscendException(ErrorCode.TYPE, e.getMessage());
 		}
+	}
+
+	public static void println() {
+		paramCheck("println", params, params.length <= 1, "object");
+		String arg = params.length == 0 ? "" : params[0].toCleanString();
+		System.out.print(outPrefix + arg + (interpreter.Ascend.debugMode ? "" : "\n"));
 	}
 	
 	public static void sleep() throws InterruptedException {
@@ -272,12 +288,6 @@ public class StandardLib {
 	public static void typeof() {
 		paramCheck("type", params, params.length == 1, "object");
 		returnValue = new Value("type", params[0].type());
-	}
-	
-	public static void write() {
-		paramCheck("write", params, params.length == 1, "object");
-		String arg = params[0].toCleanString();
-		System.out.print(outPrefix + arg + (interpreter.Ascend.debugMode ? "\n" : ""));
 	}
 	
 }

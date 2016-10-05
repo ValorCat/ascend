@@ -10,19 +10,15 @@ public class RegisterCommand extends Command {
 	private String varType;
 	
 	public RegisterCommand(String varName, String varType) {
+		super("REGISTER");
 		this.varName = varName;
 		this.varType = varType;
 	}
 
 	@Override
-	public String getName() {
-		return "REGISTER";
-	}
-
-	@Override
-	public void execute(Parser parser) {
+	public void onExecute() {
 		Value value = new Value(varType);
-		parser.getEnv().mapNameToValue(varName, value);
+		Parser.getParser().getEnv().mapNameToValue(varName, value);
 		devOutput("%s %s", value.type(), varName);
 	}
 

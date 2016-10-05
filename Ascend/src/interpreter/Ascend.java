@@ -13,7 +13,6 @@ import util.TokenArray;
 public class Ascend {
 
 	public static boolean debugMode = false;
-	public static Compiler compiler;
 	public static int line = 0;
 	
 	public static void main(String[] args) {
@@ -40,13 +39,12 @@ public class Ascend {
 			if (input.startsWith("//%debug%\n")) {
 				debugMode = true;
 			}
-			compiler = new Compiler();
 			Parser.loadNewParser();
 			TokenArray tokens = Tokenizer.tokenize(input);
 			if (debugMode) {
 				System.out.println("Tokens: " + tokens);
 			}
-			CommandData commands = compiler.compile(tokens);
+			CommandData commands = Compiler.compile(tokens);
 			Parser.getParser().parse(commands);
 		} catch (AscendException e) {
 			if (line == 0) {

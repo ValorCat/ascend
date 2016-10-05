@@ -1,22 +1,29 @@
 package lang;
+import java.util.List;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+
 import cmd.*;
-import cmd.control.OpenDoStructCommand;
+import cmd.control.SetupDoControlCommand;
 import cmd.control.OpenStructCommand;
-import util.CommandBuilder;
 import util.TokenArray;
 
 public class DoStatement implements Statement {
-	
-	public boolean isValid(TokenArray statement) {
-		return statement.size() == 1 && statement.get(0).equals("do");
+
+	@Override
+	public Matcher getMatcher(TokenArray statement) {
+		//return statement.size() == 1 && statement.get(0).equals("do");
+		return statement.match("do");
 	}
-	
-	public Command[] apply(TokenArray statement) {
-		CommandBuilder commands = new CommandBuilder();
-		commands.add(new OpenDoStructCommand());
+
+	@Override
+	public void parseStatement(MatchResult match) {}
+
+	@Override
+	public void buildCommands(List<Command> commands) {
+		commands.add(new SetupDoControlCommand());
 		commands.add(new OpenStructCommand());
 		commands.add(new OpenBlockCommand());
-		return commands.finish();
 	}
 	
 }
